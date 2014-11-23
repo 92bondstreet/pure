@@ -39,7 +39,7 @@ prompt_pure_git_dirty() {
 	[[ "$PURE_GIT_UNTRACKED_DIRTY" == 0 ]] && local umode="-uno" || local umode="-unormal"
 	command test -n "$(git status --porcelain --ignore-submodules ${umode})"
 
-	(($? == 0)) && echo '*'
+	(($? == 0)) && echo ' *'
 }
 
 # displays the exec time of the last command if set threshold was exceeded
@@ -73,6 +73,9 @@ prompt_pure_precmd() {
 
 	local prompt_pure_preprompt="\n%F{blue}%~%F{242}$vcs_info_msg_0_`prompt_pure_git_dirty` $prompt_pure_username%f %F{yellow}`prompt_pure_cmd_exec_time`%f"
 	print -P $prompt_pure_preprompt
+
+	# right display 
+	RPROMPT='$(getHour)%{$reset_color%}'
 
 	# check async if there is anything to pull
 	(( ${PURE_GIT_PULL:-1} )) && {
@@ -122,6 +125,25 @@ prompt_pure_setup() {
 
 	# prompt turns red if the previous command didn't exit with 0
 	PROMPT="%(?.%F{magenta}.%F{red})${PURE_PROMPT_SYMBOL:-❯}%f "
+}
+
+# Custom Hour color
+getHour() {
+
+	local hour=$(date +"%H");
+	local time="%T";
+	local color=%{$fg[green]%};
+	local default_limit="16";
+
+	if [ -z "$WORK_HOUR_LIMIT" ]; then
+		WORK_HOUR_LIMIT=$default_limit;
+	fi
+
+	if [[ "$hour" > "$WORK_HOUR_LIMIT" ]]; then
+		color=%{$fg[red]%};
+	fi
+
+	echo $color$time;
 }
 
 prompt_pure_setup "$@"
