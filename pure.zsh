@@ -39,7 +39,7 @@ prompt_pure_git_dirty() {
 	[[ "$PURE_GIT_UNTRACKED_DIRTY" == 0 ]] && local umode="-uno" || local umode="-unormal"
 	command test -n "$(git status --porcelain --ignore-submodules ${umode})"
 
-	(($? == 0)) && echo ' *'
+	(($? == 0)) && echo ' $(unpushedStat)'
 }
 
 # displays the exec time of the last command if set threshold was exceeded
@@ -74,7 +74,7 @@ prompt_pure_precmd() {
 	local prompt_pure_preprompt="\n%F{blue}%~%F{242}$vcs_info_msg_0_`prompt_pure_git_dirty` $prompt_pure_username%f %F{yellow}`prompt_pure_cmd_exec_time`%f"
 	print -P $prompt_pure_preprompt
 
-	# right display 
+	# right display
 	RPROMPT='$(getHour)%{$reset_color%}'
 
 	# check async if there is anything to pull
@@ -145,5 +145,23 @@ getHour() {
 
 	echo $color$time;
 }
+
+# Unpushed stat
+
+unpushedStat() {
+
+	branch=$(git rev-parse --abbrev-ref HEAD)
+	count=$(git rev-list --count HEAD origin/$branch...HEAD)
+
+	if [ "$count" -eq "0" ]
+	then
+	  stat='*'
+	else
+	  stat=$count
+	fi
+
+	echo $stat
+}
+
 
 prompt_pure_setup "$@"
